@@ -100,17 +100,43 @@ export default function AdminPage() {
         {/* Table Preview */}
         <div>
           {data.map(row => (
-            <div key={row.id} style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 4 }}>
+            <div
+              key={row.id}
+              style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 4 }}
+            >
               {Object.entries(row).map(([k, v]) => {
-                if (k === 'image' && v) return <img key={k} src={v} alt={k} style={{ width: 50, height: 50, objectFit: 'cover' }} />
-                if (k === 'icon' && v) {
-                  const Icon = (Icons as any)[v]
-                  return Icon ? <Icon key={k} size={24} /> : <span key={k}>{v}</span>
+                if (k === 'image' && typeof v === 'string' && v) {
+                  return (
+                    <img
+                      key={k}
+                      src={v}
+                      alt={k}
+                      style={{ width: 50, height: 50, objectFit: 'cover' }}
+                    />
+                  )
                 }
-                if (k !== 'id' && k !== 'created_at') return <span key={k}>{v}</span>
+
+                if (k === 'icon' && typeof v === 'string' && v) {
+                  const Icon = (Icons as any)[v]
+                  return Icon
+                    ? <Icon key={k} size={24} />
+                    : <span key={k}>{v}</span>
+                }
+
+                if (k !== 'id' && k !== 'created_at') {
+                  return <span key={k}>{String(v)}</span>
+                }
+
+                return null
               })}
+
               <Button onClick={() => handleEdit(row)}>Edit</Button>
-              <Button variant="destructive" onClick={() => handleDelete(row.id)}>Delete</Button>
+              <Button
+                variant="destructive"
+                onClick={() => handleDelete(row.id)}
+              >
+                Delete
+              </Button>
             </div>
           ))}
         </div>
