@@ -1,13 +1,13 @@
 
 
-function splitIntoThree(arr) {
-  const size = Math.floor(arr.length / 3);
+function splitIntoThree<T>(arr: T[]): [T[], T[], T[]] {
+  const size = Math.floor(arr.length / 3)
 
-  const part1 = arr.slice(0, size);
-  const part2 = arr.slice(size, size * 2);
-  const part3 = arr.slice(size * 2, size * 3);
+  const part1 = arr.slice(0, size)
+  const part2 = arr.slice(size, size * 2)
+  const part3 = arr.slice(size * 2)
 
-  return [part1, part2, part3];
+  return [part1, part2, part3]
 }
 
 export function CommentSection(properties: any) {
