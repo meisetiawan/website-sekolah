@@ -146,23 +146,66 @@ export default function AdminPage() {
           <div style={{ marginTop: 20, borderTop: '1px solid #eee', paddingTop: 16 }}>
             {Object.entries(form).map(([key, value]) => {
               if (key === 'id' || key === 'created_at') return null
-              if (key === 'image') return (
-                <div key={key}>
-                  <Input type="file" onChange={e => handleInputChange('file', e.target.files?.[0])} />
-                  {value && <img src={value} alt="preview" style={{ width: 50, height: 50, objectFit: 'cover' }} />}
-                </div>
+
+              // IMAGE FIELD
+              if (key === 'image') {
+                return (
+                  <div key={key}>
+                    <Input
+                      type="file"
+                      onChange={e =>
+                        handleInputChange('file', e.target.files?.[0])
+                      }
+                    />
+                    {typeof value === 'string' && value && (
+                      <img
+                        src={value}
+                        alt="preview"
+                        style={{
+                          width: 50,
+                          height: 50,
+                          objectFit: 'cover',
+                        }}
+                      />
+                    )}
+                  </div>
+                )
+              }
+
+              // ICON FIELD
+              if (key === 'icon') {
+                return (
+                  <Select
+                    key={key}
+                    value={typeof value === 'string' ? value : ''}
+                    onValueChange={v => handleInputChange('icon', v)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select icon" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.keys(Icons).map(i => (
+                        <SelectItem key={i} value={i}>
+                          {i}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )
+              }
+
+              // DEFAULT INPUT
+              return (
+                <Input
+                  key={key}
+                  value={typeof value === 'string' ? value : ''}
+                  onChange={e => handleInputChange(key, e.target.value)}
+                />
               )
-              if (key === 'icon') return (
-                <Select value={value} onValueChange={v => handleInputChange('icon', v)}>
-                  <SelectTrigger><SelectValue placeholder="Select icon" /></SelectTrigger>
-                  <SelectContent>
-                    {Object.keys(Icons).map(i => <SelectItem key={i} value={i}>{i}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              )
-              return <Input key={key} value={value} onChange={e => handleInputChange(key, e.target.value)} />
             })}
-            <Button onClick={handleSave} style={{ marginTop: 8 }}>Save</Button>
+            <Button onClick={handleSave} style={{ marginTop: 8 }}>
+              Save
+            </Button>
           </div>
         )}
 
