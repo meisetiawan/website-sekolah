@@ -19,7 +19,7 @@ export function FaqSection(properties: any) {
 
         <div className="flex flex-col gap-y-6 w-full xl:w-2/3 mx-auto">
 
-          {properties.faqs.map((item, index) => {
+          {properties.faqs.map((item: any, index: number) => {
 
             const isOpen = openIndex === index
 
