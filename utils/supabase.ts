@@ -1,11 +1,12 @@
+import { createClient } from '@supabase/supabase-js'
 
-import { createClient } from "@/lib/supabase/server"
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL as string
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-
-// Satu client untuk semua
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+export const supabase = createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+)
 
 /**
  * Upload file ke bucket Supabase Storage
