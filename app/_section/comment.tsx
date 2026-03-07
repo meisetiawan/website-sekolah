@@ -1,25 +1,35 @@
+interface Comment {
+  title: string
+  description: string
+  image: string
+}
 
+interface CommentSectionProps {
+  comments: Comment[]
+}
 
-function splitIntoThree<T>(arr: T[]): [T[], T[], T[]] {
+function splitIntoThree(arr: Comment[]): [Comment[], Comment[], Comment[]] {
   const size = Math.floor(arr.length / 3)
 
   const part1 = arr.slice(0, size)
   const part2 = arr.slice(size, size * 2)
-  const part3 = arr.slice(size * 2)
+  const part3 = arr.slice(size * 2, size * 3)
 
   return [part1, part2, part3]
 }
 
-export function CommentSection(properties: any) {
-  const [one, two, three] = splitIntoThree(properties.comments)
+export function CommentSection({ comments }: CommentSectionProps) {
+  const [one, two, three] = splitIntoThree(comments)
 
   return (
-    <div className={`w-full h-screen`}>
-      <div className="relative flex flex-col items-center gap-y-20 w-full h-full py-32 overflow-hidden">
+    <div className="w-full h-screen">
+      <div className="relative flex flex-col items-center gap-y-5 md:gap-y-14 xl:gap-y-20 w-full h-full py-10 md:py-20 overflow-hidden">
 
-        <p className="text-2xl">
-          Bagaimana pendapat orang lain?
-        </p>
+        <div className="hidden md:flex justify-center items-center">
+          <p className="text-2xl">
+            Bagaimana pendapat orang lain?
+          </p>
+        </div>
 
         <div className="flex flex-col gap-y-10 w-full grow">
 
@@ -71,7 +81,11 @@ export function CommentSection(properties: any) {
   )
 }
 
-function CommentCard({ item }: any) {
+interface CommentCardProps {
+  item: Comment
+}
+
+function CommentCard({ item }: CommentCardProps) {
   return (
     <div className="min-w-[300px] h-full p-6 bg-gray-900/70 border border-gray-800 rounded-2xl">
       <div className="flex items-center gap-4 mb-4">
@@ -79,9 +93,9 @@ function CommentCard({ item }: any) {
           src={item.image}
           className="w-12 h-12 rounded-full object-cover"
         />
-        <p className="font-medium">{item.tittle}</p>
+        <p className="un font-medium">{item.title}</p>
       </div>
-      <p className="text-sm text-gray-300">
+      <p className="un text-sm text-gray-300">
         {item.description}
       </p>
     </div>
