@@ -26,7 +26,7 @@ interface DataTableProps {
   data: Array<{ id: string | number; [key: string]: unknown }>;
   fields: string[];
   onRefresh: () => void;
-  onEdit: (row: unknown) => void;
+  onEdit: (row: { id: string | number; [key: string]: unknown }) => void;
 }
 
 export function DataTable({ tableName, data, fields, onRefresh, onEdit }: DataTableProps) {

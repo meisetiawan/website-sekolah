@@ -17,8 +17,10 @@ import {
   MessageSquare,
   HelpCircle,
   Settings,
+  Sliders,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { TableName } from '@/lib/admin-config';
 
 const tables = [
   { name: 'about', label: 'About', icon: Info },
@@ -28,11 +30,12 @@ const tables = [
   { name: 'comment', label: 'Comments', icon: MessageSquare },
   { name: 'faq', label: 'FAQ', icon: HelpCircle },
   { name: 'info', label: 'Info', icon: Settings },
+  { name: 'slider', label: 'Slider', icon: Sliders },
 ] as const;
 
 interface AdminSidebarProps {
-  selectedTable: string;
-  onTableSelect: (table: string) => void;
+  selectedTable: TableName;
+  onTableSelect: (table: TableName) => void;
 }
 
 export function AdminSidebar({ selectedTable, onTableSelect }: AdminSidebarProps) {

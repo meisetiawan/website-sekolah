@@ -36,13 +36,15 @@ const getData = cache(async () => {
 
   const { data: faqs } = await supabase.from('faq').select('question, answer');
 
+  const { data: sliders } = await supabase.from('slider').select('title, image');
+
   const { data: credit } = await supabase
     .from('about')
     .select('title, description')
     .limit(1)
     .single();
 
-  return { about, histories, trusteds, features, section, comments, faqs, credit };
+  return { about, histories, trusteds, features, section, comments, faqs, sliders, credit };
 });
 
 export default async function Server() {
@@ -50,7 +52,7 @@ export default async function Server() {
 
   return (
     <>
-      <ConstellationSection visible={true} />
+      <ConstellationSection visible={true} sliders={data.sliders || []} />
       {data.about && (
         <AboutSection visible={true} about={data.about} trusteds={data.trusteds || []} />
       )}

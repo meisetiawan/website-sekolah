@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 
 interface RowData {
-  id?: number | string;
+  id: number | string;
   created_at?: string;
   image?: string;
   icon?: string;
@@ -31,7 +31,7 @@ export default function AdminPage() {
   const [data, setData] = useState<RowData[]>([]);
   const [editId, setEditId] = useState<number | string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
-  const [formData, setFormData] = useState<RowData>({});
+  const [formData, setFormData] = useState<Partial<RowData>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -60,7 +60,7 @@ export default function AdminPage() {
         .order('id', { ascending: false });
 
       if (error) throw error;
-      setData((fetchedData as RowData[]) || []);
+      setData((fetchedData as RowData[]).filter(row => row.id != null) || []);
       setEditId(null);
       setIsCreating(false);
       setFormData({});
@@ -73,8 +73,8 @@ export default function AdminPage() {
     }
   }, [selectedTable, supabase]);
 
-  const handleEdit = (row: RowData) => {
-    setEditId(row.id ?? null);
+  const handleEdit = (row: { id: string | number; [key: string]: unknown }) => {
+    setEditId(row.id);
     setIsCreating(false);
     setFormData({ ...row });
     setIsDialogOpen(true);
@@ -95,7 +95,7 @@ export default function AdminPage() {
     try {
       if (isCreating) {
         // Create new data
-        const insertData: RowData = { ...formData };
+        const insertData: Partial<RowData> = { ...formData };
 
         if ('file' in insertData && insertData.file instanceof File) {
           const url = await uploadImage(insertData.file, selectedTable);
@@ -112,7 +112,7 @@ export default function AdminPage() {
         toast.success('Record created successfully');
       } else if (editId) {
         // Update existing data
-        const updateData: RowData = { ...formData };
+        const updateData: Partial<RowData> = { ...formData };
 
         if ('file' in updateData && updateData.file instanceof File) {
           const url = await uploadImage(updateData.file, selectedTable);
