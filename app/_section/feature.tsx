@@ -30,7 +30,7 @@ export function FeatureSection({ section, features }: FeatureSectionProps) {
 
   return (
     <div className="w-full h-screen">
-      <div className="relative flex flex-col justify-center gap-y-12 w-full h-full px-20 xl:px-40 py-20 xl:py-32">
+      <div className="relative flex flex-col justify-center gap-y-12 w-full h-full px-10 md:px-20 xl:px-40 py-10 md:py-20 xl:py-32">
         <div className="absolute w-[10rem] h-[10rem] bg-[#3f00ff] rounded-full blur-[10rem] opacity-50"></div>
         <div className="absolute bottom-0 right-0 w-[10rem] h-[10rem] bg-[#3f00ff] rounded-full blur-[10rem] opacity-50"></div>
 
@@ -51,15 +51,15 @@ export function FeatureSection({ section, features }: FeatureSectionProps) {
         </div>
 
         {/* Main Card */}
-        <div className="rounded-3xl flex flex-col gap-y-10 xl:flex-row w-full h-full p-14 xl:p-20 bg-gray-900/70 border border-gray-800">
+        <div className="rounded-3xl flex flex-col gap-y-10 xl:flex-row w-full h-full p-10 md:p-14 xl:p-20 bg-gray-900/70 border border-gray-800">
 
           {/* Highlight */}
           <div className="flex items-center w-full xl:w-1/2 h-auto xl:h-full">
             <div className="flex flex-col gap-y-10 w-[70%]">
-              <p className="text-2xl un">
+              <p className="text-xl md:text-2xl un">
                 {section.title}
               </p>
-              <p className="un">
+              <p className="text-sm md:text-base un">
                 {section.description}
               </p>
             </div>
@@ -73,7 +73,7 @@ export function FeatureSection({ section, features }: FeatureSectionProps) {
               return (
                 <div
                   key={index}
-                  className="rounded-2xl flex flex-row items-center gap-x-10 h-1/3 p-8 bg-gray-900/70 border border-gray-800"
+                  className="rounded-2xl flex flex-col md:flex-row items-center gap-y-5 gap-x-10 md:gap-x-10 p-8 md:p-16 bg-gray-900/70 border border-gray-800"
                 >
                   <IconComponent className="text-gray-400 h-full aspect-square" size={50} />
 

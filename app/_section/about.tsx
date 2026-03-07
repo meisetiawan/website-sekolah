@@ -28,14 +28,14 @@ export function AboutSection({ visible, about, trusteds }: AboutSectionProps) {
         <div className="absolute left-0 bottom-0 w-[10rem] h-[10rem] bg-[#3f00ff] rounded-full blur-[10rem] opacity-50"></div>
         <div className="absolute right-0 bottom-0 w-[10rem] h-[10rem] bg-[#3f00ff] rounded-full blur-[10rem] opacity-50"></div>
 
-        <div className="flex justify-center items-end w-full h-1/5 py-8">
-          <p>SMA N 1 Purbalingga Profile</p>
+        <div className="flex justify-center items-end w-full h-1/4 py-8">
+          <p className="text-sm md:text-base">SMA N 1 Purbalingga Profile</p>
         </div>
 
-        <div className="flex flex-row justify-center items-center grow">
+        <div className="flex flex-row justify-center items-center h-1/2">
           <ConstellationTwo visible={1} />
 
-          <div className="flex flex-col items-center w-1/2 md:w-1/3 gap-y-16 text-center">
+          <div className="flex flex-col items-center w-1/2 xl:w-1/3 gap-y-16 text-center">
             <p className="text-3xl">{about.title}</p>
             <p>{about.description}</p>
 
@@ -49,8 +49,8 @@ export function AboutSection({ visible, about, trusteds }: AboutSectionProps) {
           <ConstellationOne visible={1} />
         </div>
 
-        <div className="flex flex-col gap-y-10 w-full h-1/5 py-8">
-          <p className="text-center">Dipercaya oleh</p>
+        <div className="flex flex-col gap-y-10 w-full h-1/4 py-8">
+          <p className="text-center text-sm md:text-base">Ekstrakurikuler</p>
 
           <div className="flex flex-row">
             <div className="flex flex-row gap-x-10 pr-10 animate-infinite-carousel-left">

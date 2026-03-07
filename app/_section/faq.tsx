@@ -17,12 +17,12 @@ export function FaqSection({ faqs }: FaqSectionProps) {
 
   return (
     <div className="relative w-full h-screen">
-      <div className="flex flex-col justify-center gap-y-20 w-full h-full p-16 md:p-32 xl:p-40 bg-gray-900/70">
+      <div className="flex flex-col justify-center gap-y-10 md:gap-y-20 w-full h-full p-10 md:p-20 xl:p-40 bg-gray-900/70">
 
         <div className="absolute top-0 left-0 w-[15rem] h-[15rem] bg-[#3f00ff] rounded-full blur-[12rem] opacity-40"></div>
         <div className="absolute bottom-0 right-0 w-[15rem] h-[15rem] bg-[#3f00ff] rounded-full blur-[12rem] opacity-40"></div>
 
-        <p className="text-3xl text-center">
+        <p className="un text-xl md:text-2xl text-center font-medium">
           Frequently Asked Questions
         </p>
 
@@ -39,7 +39,7 @@ export function FaqSection({ faqs }: FaqSectionProps) {
                 onClick={() => setOpenIndex(isOpen ? null : index)}
               >
                 <div className="flex justify-between items-center">
-                  <p className="un text-lg font-medium">
+                  <p className="un text-base md:text-lg">
                     {item.question}
                   </p>
                   <span className="un text-white">

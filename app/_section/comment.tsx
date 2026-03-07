@@ -23,11 +23,13 @@ export function CommentSection({ comments }: CommentSectionProps) {
 
   return (
     <div className="w-full h-screen">
-      <div className="relative flex flex-col items-center gap-y-20 w-full h-full py-32 overflow-hidden">
+      <div className="relative flex flex-col items-center gap-y-5 md:gap-y-14 xl:gap-y-20 w-full h-full py-10 md:py-20 overflow-hidden">
 
-        <p className="text-2xl">
-          Bagaimana pendapat orang lain?
-        </p>
+        <div className="hidden md:flex justify-center items-center">
+          <p className="text-2xl">
+            Bagaimana pendapat orang lain?
+          </p>
+        </div>
 
         <div className="flex flex-col gap-y-10 w-full grow">
 
@@ -91,9 +93,9 @@ function CommentCard({ item }: CommentCardProps) {
           src={item.image}
           className="w-12 h-12 rounded-full object-cover"
         />
-        <p className="font-medium">{item.title}</p>
+        <p className="un font-medium">{item.title}</p>
       </div>
-      <p className="text-sm text-gray-300">
+      <p className="un text-sm text-gray-300">
         {item.description}
       </p>
     </div>
