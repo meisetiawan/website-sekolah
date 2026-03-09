@@ -1,215 +1,229 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client' // Import createClient dari client.ts
-import { uploadImage } from '@/lib/supabase/upload' // Import createClient dari client.ts
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
-import * as Icons from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { Session } from '@supabase/supabase-js';
+import { createClient } from '@/lib/supabase/client';
+import { uploadImage } from '@/lib/supabase/upload';
+import { AdminHeader } from '@/components/admin/admin-header';
+import { DataTable } from '@/components/admin/data-table';
+import { FormDialog } from '@/components/admin/form-dialog';
+import { AdminSidebar } from '@/components/admin/admin-sidebar';
+import { Card } from '@/components/ui/card';
+import { ADMIN_TABLES, getTableFields, getTableLabel, TableName } from '@/lib/admin-config';
+import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
 
-const supabase = createClient() // Memanggil createClient untuk mendapatkan Supabase instance
-
-const tables = ['about', 'feature', 'history', 'trusted', 'comment', 'faq', 'info']
+interface RowData {
+  id: number | string;
+  created_at?: string;
+  image?: string;
+  icon?: string;
+  [key: string]: unknown;
+}
 
 export default function AdminPage() {
-  const router = useRouter()
-  const [session, setSession] = useState<any>(null)
-  const [selectedTable, setSelectedTable] = useState('about')
-  const [data, setData] = useState<any[]>([])
-  const [editId, setEditId] = useState<any>(null)
-  const [form, setForm] = useState<any>({})
+  const router = useRouter();
+  const supabase = createClient();
 
-  // Cek session pengguna
+  const [session, setSession] = useState<Session | null>(null);
+  const [selectedTable, setSelectedTable] = useState<TableName>('about');
+  const [data, setData] = useState<RowData[]>([]);
+  const [editId, setEditId] = useState<number | string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [formData, setFormData] = useState<Partial<RowData>>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // Check authentication
   useEffect(() => {
     const checkAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (!session) return router.push('/login')
-        setSession(session)
-      } catch (error) {
-        console.error('Error fetching session:', error)
-      }
-    }
-    checkAuth()
-  }, [router])
+      const { data } = await supabase.auth.getSession();
+      const session = data.session;
+      if (!session) return router.push('/login');
+      setSession(session);
+    };
+    checkAuth();
+  }, [router, supabase]);
 
-  // Ambil data tabel
+  // Fetch data when table changes
   useEffect(() => {
-    if (session) fetchData()
-  }, [selectedTable, session])
+    if (session) fetchData();
+  }, [selectedTable, session]);
 
-  const fetchData = async () => {
-    const { data } = await supabase.from(selectedTable).select('*')
-    setData(data || [])
-    setEditId(null)
-    setForm({})
-  }
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const { data: fetchedData, error } = await supabase
+        .from(selectedTable)
+        .select('*')
+        .order('id', { ascending: false });
 
-  const handleEdit = (row: any) => {
-    setEditId(row.id)
-    setForm(row)
-  }
+      if (error) throw error;
+      setData((fetchedData as RowData[]).filter(row => row.id != null) || []);
+      setEditId(null);
+      setIsCreating(false);
+      setFormData({});
+    } catch (error) {
+      toast.error(
+        `Failed to fetch data: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedTable, supabase]);
 
-  const handleDelete = async (id: any) => {
-    await supabase.from(selectedTable).delete().eq('id', id)
-    fetchData()
-  }
+  const handleEdit = (row: { id: string | number; [key: string]: unknown }) => {
+    setEditId(row.id);
+    setIsCreating(false);
+    setFormData({ ...row });
+    setIsDialogOpen(true);
+  };
+
+  const handleAddNew = () => {
+    setIsCreating(true);
+    setEditId(null);
+    setFormData({});
+    setIsDialogOpen(true);
+  };
+
+  const handleFormChange = (key: string, value: unknown) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+  };
 
   const handleSave = async () => {
-    if (!editId) return
-    const updateData = { ...form }
+    try {
+      if (isCreating) {
+        // Create new data
+        const insertData: Partial<RowData> = { ...formData };
 
-    // Upload file jika ada
-    if (form.file) {
-      const url = await uploadImage(form.file, selectedTable) // Panggil uploadImage
-      updateData.image = url
-      delete updateData.file
+        if ('file' in insertData && insertData.file instanceof File) {
+          const url = await uploadImage(insertData.file, selectedTable);
+          insertData.image = url;
+          delete insertData.file;
+        }
+
+        delete insertData.id;
+        delete insertData.created_at;
+
+        const { error } = await supabase.from(selectedTable).insert([insertData]);
+        if (error) throw error;
+
+        toast.success('Record created successfully');
+      } else if (editId) {
+        // Update existing data
+        const updateData: Partial<RowData> = { ...formData };
+
+        if ('file' in updateData && updateData.file instanceof File) {
+          const url = await uploadImage(updateData.file, selectedTable);
+          updateData.image = url;
+          delete updateData.file;
+        }
+
+        delete updateData.id;
+        delete updateData.created_at;
+
+        const { error } = await supabase.from(selectedTable).update(updateData).eq('id', editId);
+        if (error) throw error;
+
+        toast.success('Record updated successfully');
+      }
+
+      await fetchData();
+    } catch (error) {
+      toast.error(`Error saving data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw error;
     }
+  };
 
-    await supabase.from(selectedTable).update(updateData).eq('id', editId)
-    fetchData()
+  if (!session) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin" />
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
-  const handleInputChange = (key: string, value: any) => {
-    setForm({ ...form, [key]: value })
-  }
-
-  if (!session) return <div>Loading...</div>
+  const fields = getTableFields(selectedTable);
+  const tableLabel = getTableLabel(selectedTable);
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
-      {/* Sidebar */}
-      <aside style={{ width: 200, borderRight: '1px solid #ccc', padding: 16 }}>
-        {tables.map(t => (
-          <div
-            key={t}
-            style={{ marginBottom: 8, cursor: 'pointer', fontWeight: selectedTable === t ? 'bold' : 'normal' }}
-            onClick={() => setSelectedTable(t)}
-          >
-            {t.toUpperCase()}
+    <div className="flex min-h-screen">
+      {/* Desktop Sidebar */}
+      <div className="hidden w-64 border-r border-gray-200 dark:border-gray-800 lg:block">
+        <AdminSidebar selectedTable={selectedTable} onTableSelect={setSelectedTable} />
+      </div>
+
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <AdminHeader
+          session={session}
+          tableTitle={tableLabel}
+          onAddNew={handleAddNew}
+        />
+
+        {/* Main Content */}
+        <main className="flex-1 overflow-auto p-6">
+          <div className="mx-auto max-w-5xl space-y-6">
+            {/* Stats/Info Card */}
+            <Card className="border-none bg-gradient-to-r from-blue-50 to-purple-50 p-6 dark:from-gray-800 dark:to-gray-800">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    Total Records
+                  </p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white">{data.length}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Table:{' '}
+                    <span className="font-semibold text-gray-900 dark:text-white">
+                      {tableLabel}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Data Display */}
+            {isLoading ? (
+              <Card className="flex items-center justify-center py-12">
+                <div className="text-center">
+                  <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin" />
+                  <p>Loading data...</p>
+                </div>
+              </Card>
+            ) : (
+              <DataTable
+                tableName={selectedTable}
+                data={data}
+                fields={fields}
+                onRefresh={fetchData}
+                onEdit={handleEdit}
+              />
+            )}
           </div>
-        ))}
-      </aside>
+        </main>
+      </div>
 
-      {/* Main Panel */}
-      <main style={{ flex: 1, padding: 16 }}>
-        <h1>{selectedTable.toUpperCase()} ADMIN</h1>
-
-        {/* Table Preview */}
-        <div>
-          {data.map(row => (
-            <div
-              key={row.id}
-              style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 4 }}
-            >
-              {Object.entries(row).map(([k, v]) => {
-                if (k === 'image' && typeof v === 'string' && v) {
-                  return (
-                    <img
-                      key={k}
-                      src={v}
-                      alt={k}
-                      style={{ width: 50, height: 50, objectFit: 'cover' }}
-                    />
-                  )
-                }
-
-                if (k === 'icon' && typeof v === 'string' && v) {
-                  const Icon = (Icons as any)[v]
-                  return Icon
-                    ? <Icon key={k} size={24} />
-                    : <span key={k}>{v}</span>
-                }
-
-                if (k !== 'id' && k !== 'created_at') {
-                  return <span key={k}>{String(v)}</span>
-                }
-
-                return null
-              })}
-
-              <Button onClick={() => handleEdit(row)}>Edit</Button>
-              <Button
-                variant="destructive"
-                onClick={() => handleDelete(row.id)}
-              >
-                Delete
-              </Button>
-            </div>
-          ))}
-        </div>
-
-        {/* Edit Form */}
-        {editId && (
-          <div style={{ marginTop: 20, borderTop: '1px solid #eee', paddingTop: 16 }}>
-            {Object.entries(form).map(([key, value]) => {
-              if (key === 'id' || key === 'created_at') return null
-
-              // IMAGE FIELD
-              if (key === 'image') {
-                return (
-                  <div key={key}>
-                    <Input
-                      type="file"
-                      onChange={e =>
-                        handleInputChange('file', e.target.files?.[0])
-                      }
-                    />
-                    {typeof value === 'string' && value && (
-                      <img
-                        src={value}
-                        alt="preview"
-                        style={{
-                          width: 50,
-                          height: 50,
-                          objectFit: 'cover',
-                        }}
-                      />
-                    )}
-                  </div>
-                )
-              }
-
-              // ICON FIELD
-              if (key === 'icon') {
-                return (
-                  <Select
-                    key={key}
-                    value={typeof value === 'string' ? value : ''}
-                    onValueChange={v => handleInputChange('icon', v)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select icon" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.keys(Icons).map(i => (
-                        <SelectItem key={i} value={i}>
-                          {i}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )
-              }
-
-              // DEFAULT INPUT
-              return (
-                <Input
-                  key={key}
-                  value={typeof value === 'string' ? value : ''}
-                  onChange={e => handleInputChange(key, e.target.value)}
-                />
-              )
-            })}
-            <Button onClick={handleSave} style={{ marginTop: 8 }}>
-              Save
-            </Button>
-          </div>
-        )}
-
-      </main>
+      {/* Form Dialog */}
+      <FormDialog
+        isOpen={isDialogOpen}
+        isCreating={isCreating}
+        tableName={selectedTable}
+        fields={fields}
+        formData={formData}
+        onFormChange={handleFormChange}
+        onSave={handleSave}
+        onClose={() => {
+          setIsDialogOpen(false);
+          setEditId(null);
+          setIsCreating(false);
+          setFormData({});
+        }}
+      />
     </div>
-  )
+  );
 }
